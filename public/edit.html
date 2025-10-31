@@ -1,3 +1,4 @@
+<!-- edit.html -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -8,7 +9,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
-    /* same styling as previous edit.html login page + dashboard cards */
     body{font-family:Inter,Roboto,-apple-system,"Segoe UI","Helvetica Neue",Arial;display:flex;justify-content:center;align-items:flex-start;padding:48px;background:#e6ffed;}
     .container{width:480px;background:#fff;border-radius:12px;padding:24px;box-shadow:0 8px 30px rgba(17,24,39,0.06);}
     input,button{padding:10px;border-radius:8px;border:1px solid #ccc;margin:6px 0;width:100%;}
@@ -26,4 +26,76 @@
     <div id="dashboard" style="display:none;">
       <div class="status-card"><span>Overall</span><span id="overallText">All Operational</span></div>
       <div class="status-card"><span>PSLE Countdown Website</span><span id="PSLEWebsite">Operational</span></div>
-      <div class="status
+      <div class="status-card"><span>PSLE Countdown Administrator Website</span><span id="PSLEAdmin">Operational</span></div>
+      <div class="status-card"><span>Countify App</span><span id="CountifyApp">Operational</span></div>
+      <div class="status-card"><span>Employee Portal</span><span id="EmployeePortal">Operational</span></div>
+      <div class="controls">
+        <button onclick="setStatus('operational')">All Operational</button>
+        <button style="background:#b45309" onclick="setStatus('partial')">Partial Outage</button>
+        <button style="background:#dc2626" onclick="setStatus('disrupted')">Site Disruption</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC6ReZ9JiKAhVwXLUwgzRRsk2Daw3pRli8",
+      authDomain: "daysmadesimple-admin.firebaseapp.com",
+      projectId: "daysmadesimple-admin",
+      storageBucket: "daysmadesimple-admin.firebasestorage.app",
+      messagingSenderId: "165327565681",
+      appId: "1:165327565681:web:e28364ebb3cb1d9a683cd0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const statusRef = db.collection('status').doc('systemStatus');
+
+    function loginUser(){
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      if(!password){ alert("Password empty!"); return; }
+      auth.signInWithEmailAndPassword(email,password)
+        .then(()=>{
+          document.querySelector('input[type=text]').style.display='none';
+          document.querySelector('input[type=password]').style.display='none';
+          document.querySelector('button').style.display='none';
+          document.getElementById('dashboard').style.display='block';
+          loadStatus();
+        })
+        .catch(err=> alert('❌ '+err.message));
+    }
+
+    function loadStatus(){
+      statusRef.onSnapshot(doc=>{
+        if(!doc.exists) return;
+        const data = doc.data();
+        const colorMap = {operational:'#059669', partial:'#b45309', disrupted:'#dc2626'};
+        document.getElementById('overallText').textContent = capitalize(data.overall);
+        document.getElementById('PSLEWebsite').textContent = capitalize(data.PSLEWebsite);
+        document.getElementById('PSLEWebsite').style.color = colorMap[data.PSLEWebsite];
+        document.getElementById('PSLEAdmin').textContent = capitalize(data.PSLEAdmin);
+        document.getElementById('PSLEAdmin').style.color = colorMap[data.PSLEAdmin];
+        document.getElementById('CountifyApp').textContent = capitalize(data.CountifyApp);
+        document.getElementById('CountifyApp').style.color = colorMap[data.CountifyApp];
+        document.getElementById('EmployeePortal').textContent = capitalize(data.EmployeePortal);
+        document.getElementById('EmployeePortal').style.color = colorMap[data.EmployeePortal];
+      });
+    }
+
+    function setStatus(status){
+      const timestamp = Date.now();
+      statusRef.update({
+        overall: status,
+        PSLEWebsite: status,
+        PSLEAdmin: status,
+        CountifyApp: status,
+        EmployeePortal: status,
+        lastUpdated: timestamp
+      }).catch(err=>alert('Error updating status: '+err.message));
+    }
+
+    function capitalize(str){ return str.charAt(0).toUpperCase() + str.slice(1); }
+  </script>
+</body>
+</html>
