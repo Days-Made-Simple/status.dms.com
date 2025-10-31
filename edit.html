@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Status Editor — PSLE / Countify</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family: Inter, Roboto, -apple-system, "Segoe UI", "Helvetica Neue", Arial;
+      background:#ffffff;
+      color:#111827;
+      -webkit-font-smoothing:antialiased;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .container{
+      width:100%;
+      max-width:480px;
+      border-radius:12px;
+      box-shadow:0 8px 30px rgba(17,24,39,0.06);
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .header{
+      padding:24px 28px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      border-bottom:1px solid rgba(15,23,42,0.04);
+    }
+
+    .logo{
+      height:40px;
+      width:40px;
+      border-radius:6px;
+      background:#eef2ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#4338ca;
+      font-size:16px;
+    }
+
+    .brand { font-size:18px; font-weight:600; }
+
+    .form{ padding:28px; display:flex; flex-direction:column; gap:12px; }
+
+    label{display:block;font-size:13px;color:#374151;margin-bottom:4px;}
+    input[type="text"], input[type="password"]{
+      width:100%;
+      padding:12px 14px;
+      border:1px solid rgba(15,23,42,0.08);
+      border-radius:8px;
+      font-size:15px;
+      outline:none;
+      background:#fff;
+    }
+    input:focus{box-shadow:0 0 0 4px rgba(99,102,241,0.06);border-color:#6366f1}
+
+    .actions{ display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+    .actions-row{ display:flex; justify-content:space-between; align-items:center; }
+
+    .btn{ background:#111827; color:#fff; padding:10px 14px; border-radius:8px; border:none; font-weight:600; cursor:pointer; }
+
+    .link{font-size:13px;color:#4b5563;text-decoration:none;cursor:pointer;}
+    .small-note{font-size:12px;color:#6b7280;margin-top:12px}
+    .footer{padding:12px 20px;border-top:1px solid rgba(15,23,42,0.04);font-size:12px;color:#6b7280;text-align:center;margin-top:12px;}
+
+    .status-card{background:#f9f9f9;border-radius:12px;padding:18px;display:flex;justify-content:space-between;align-items:center;margin-top:12px;border:1px solid rgba(0,0,0,0.04);}
+    .status-dot{font-size:24px;margin-right:12px;}
+    .controls{display:flex;gap:8px;margin-top:16px;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo"><img src="public/logo.png" alt="Logo" style="width:100%;height:100%;object-fit:contain;border-radius:6px;"></div>
+      <div>
+        <div class="brand">Status Editor</div>
+        <div style="font-size:12px;color:#6b7280">Sign in to edit system statuses</div>
+      </div>
+    </div>
+
+    <form class="form" onsubmit="event.preventDefault();loginUser()">
+      <div>
+        <label for="username">Username / Email</label>
+        <input id="username" name="username" type="text" inputmode="email" autocomplete="username" placeholder="example@daysmadesimple.com" required />
+      </div>
+      <div>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" />
+      </div>
+      <div class="actions">
+        <div class="actions-row">
+          <button class="btn" type="submit">Sign in</button>
+        </div>
+        <span class="link" onclick="sendSignInLink()">Or, Sign in with Email link</span>
+      </div>
+      <div class="small-note">By signing in you agree to the terms of use.</div>
+    </form>
+
+    <div class="footer">If you need help, contact your system administrator.</div>
+
+    <div id="dashboard" style="display:none;">
+      <div class="status-card">
+        <div><span class="status-dot" id="overallDot">✓</span><span id="overallText">All Systems Operational</span></div>
+        <div id="subtext" style="color:#6b7280;font-size:13px;">All monitored services are functioning normally.</div>
+      </div>
+      <div class="status-card"><span>PSLE Countdown Website</span><span style="color:#059669;font-weight:600;">Operational</span></div>
+      <div class="status-card"><span>PSLE Countdown Administrator Website</span><span style="color:#059669;font-weight:600;">Operational</span></div>
+      <div class="status-card"><span>Countify App</span><span style="color:#059669;font-weight:600;">Operational</span></div>
+      <div class="status-card"><span>Employee Portal</span><span style="color:#059669;font-weight:600;">Operational</span></div>
+
+      <div class="controls" id="controls">
+        <button class="btn" id="setOperational" style="background:#059669">All Operational</button>
+        <button class="btn" id="setPartial" style="background:#b45309">Partial Outage</button>
+        <button class="btn" id="setDisrupted" style="background:#dc2626">Site Disruption</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC6ReZ9JiKAhVwXLUwgzRRsk2Daw3pRli8",
+      authDomain: "daysmadesimple-admin.firebaseapp.com",
+      projectId: "daysmadesimple-admin",
+      storageBucket: "daysmadesimple-admin.firebasestorage.app",
+      messagingSenderId: "165327565681",
+      appId: "1:165327565681:web:e28364ebb3cb1d9a683cd0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function loginUser(){
+      const email = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      if(!password){ alert("Password empty! Use 'Sign in with Email link'."); return; }
+      auth.signInWithEmailAndPassword(email,password)
+        .then(()=> {
+          document.querySelector('form').style.display='none';
+          document.getElementById('dashboard').style.display='block';
+        })
+        .catch(err=> alert('❌ '+err.message));
+    }
+
+    function sendSignInLink(){
+      const email = document.getElementById('username').value.trim();
+      if(!email){ alert('Enter your email first'); return; }
+      const actionCodeSettings = {
+        url: window.location.origin + '/edit.html',
+        handleCodeInApp: true
+      };
+      auth.sendSignInLinkToEmail(email, actionCodeSettings)
+        .then(()=>{
+          window.localStorage.setItem('emailForSignIn', email);
+          alert('✅ Email sent! Check your inbox to complete sign-in.');
+        })
+        .catch(err=>alert('❌ '+err.message));
+    }
+  </script>
+</body>
+</html>
