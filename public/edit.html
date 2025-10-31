@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Status Editor — PSLE / Countify</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    /* same styling as previous edit.html login page + dashboard cards */
+    body{font-family:Inter,Roboto,-apple-system,"Segoe UI","Helvetica Neue",Arial;display:flex;justify-content:center;align-items:flex-start;padding:48px;background:#e6ffed;}
+    .container{width:480px;background:#fff;border-radius:12px;padding:24px;box-shadow:0 8px 30px rgba(17,24,39,0.06);}
+    input,button{padding:10px;border-radius:8px;border:1px solid #ccc;margin:6px 0;width:100%;}
+    button{background:#059669;color:#fff;border:none;cursor:pointer;font-weight:600;}
+    .status-card{margin-top:12px;padding:12px;background:#f9f9f9;border-radius:12px;display:flex;justify-content:space-between;align-items:center;}
+    .controls{display:flex;gap:8px;margin-top:16px;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Status Editor Login</h2>
+    <input type="text" id="email" placeholder="example@daysmadesimple.com" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="loginUser()">Sign In</button>
+    <div id="dashboard" style="display:none;">
+      <div class="status-card"><span>Overall</span><span id="overallText">All Operational</span></div>
+      <div class="status-card"><span>PSLE Countdown Website</span><span id="PSLEWebsite">Operational</span></div>
+      <div class="status
