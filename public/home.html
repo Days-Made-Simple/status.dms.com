@@ -18,15 +18,16 @@
       --card-bg: #ffffff;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
-    html, body {height: 100%;margin: 0;}
-    body {background: var(--green-100);display: flex;align-items: flex-start;justify-content: center;padding: 48px;transition: background 0.3s ease;}
-    .wrap {width: 980px;max-width: 95%;}
-    .status-card {background: var(--card-bg);border-radius: 12px;padding: 18px;box-shadow: 0 6px 20px rgba(16,24,40,0.06);border: 1px solid rgba(0,0,0,0.04);}
+    html, body {height: 100%; margin: 0;}
+    body {background: var(--green-100); display: flex; align-items: flex-start; justify-content: center; padding: 48px; transition: background 0.3s ease;}
+    .wrap {width: 980px; max-width: 95%;}
+    .status-card {background: var(--card-bg); border-radius: 12px; padding: 18px; box-shadow: 0 6px 20px rgba(16,24,40,0.06); border: 1px solid rgba(0,0,0,0.04);}
     h2 {margin-bottom: 10px;}
   </style>
 </head>
 <body>
   <div class="wrap">
+    <!-- Overall Status Card -->
     <div class="status-card" id="overallCard">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div style="display:flex;gap:12px;align-items:center;">
@@ -43,15 +44,17 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div class="status-card"><span>PSLE Countdown Website</span><span id="PSLEWebsite" style="color:var(--green-600);font-weight:600;float:right">Operational</span></div>
-      <div class="status-card"><span>PSLE Countdown Administrator Website</span><span id="PSLEAdmin" style="color:var(--green-600);font-weight:600;float:right">Operational</span></div>
-      <div class="status-card"><span>Countify App</span><span id="CountifyApp" style="color:var(--green-600);font-weight:600;float:right">Operational</span></div>
-      <div class="status-card"><span>Employee Portal</span><span id="EmployeePortal" style="color:var(--green-600);font-weight:600;float:right">Operational</span></div>
+    <!-- Individual Service Cards -->
+    <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="status-card"><span>PSLE Countdown Website</span><span id="PSLEWebsite" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
+      <div class="status-card"><span>PSLE Countdown Administrator Website</span><span id="PSLEAdmin" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
+      <div class="status-card"><span>Countify App</span><span id="CountifyApp" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
+      <div class="status-card"><span>Employee Portal</span><span id="EmployeePortal" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
     </div>
   </div>
 
   <script>
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyC6ReZ9JiKAhVwXLUwgzRRsk2Daw3pRli8",
       authDomain: "daysmadesimple-admin.firebaseapp.com",
@@ -68,15 +71,15 @@
     const overallText = document.getElementById('overallText');
     const subtext = document.getElementById('subtext');
     const body = document.body;
-    const serviceIds = ['PSLEWebsite','PSLEAdmin','CountifyApp','EmployeePortal'];
 
+    const serviceIds = ['PSLEWebsite','PSLEAdmin','CountifyApp','EmployeePortal'];
     const statusColors = {
-      operational: {color:'var(--green-600)',text:'Operational',bg:'var(--green-100)'},
-      partial: {color:'var(--yellow-600)',text:'Partial Outage',bg:'var(--yellow-100)'},
-      disrupted: {color:'var(--red-600)',text:'Disrupted',bg:'var(--red-100)'}
+      operational: {color:'var(--green-600)', text:'Operational', bg:'var(--green-100)'},
+      partial: {color:'var(--yellow-600)', text:'Partial Outage', bg:'var(--yellow-100)'},
+      disrupted: {color:'var(--red-600)', text:'Disrupted', bg:'var(--red-100)'}
     };
 
-    // Auto-update timestamps
+    // Timestamp updater
     let lastUpdated = new Date();
     function updateTimestamps() {
       const diff = Math.floor((Date.now() - lastUpdated.getTime())/1000);
@@ -85,15 +88,16 @@
     }
     setInterval(updateTimestamps, 1000);
 
+    // Update UI based on Firestore data
     function updateUI(data){
-      // Overall
       let worst = 'operational';
       serviceIds.forEach(id=>{
         const status = data[id] || 'operational';
         document.getElementById(id).textContent = statusColors[status].text;
         document.getElementById(id).style.color = statusColors[status].color;
+
         if(status==='disrupted') worst='disrupted';
-        if(status==='partial' && worst!=='disrupted') worst='partial';
+        else if(status==='partial' && worst!=='disrupted') worst='partial';
       });
 
       overallDot.textContent = worst==='operational'? '✓' : worst==='partial'? '!' : '✕';
@@ -105,7 +109,7 @@
       lastUpdated = new Date();
     }
 
-    // Listen for Firestore live updates
+    // Firestore live listener
     db.collection('status').doc('systemStatus')
       .onSnapshot(doc=>{
         if(doc.exists){
