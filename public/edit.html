@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sign In</title>
+  <title>Sign In / Edit Status</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
@@ -73,14 +73,23 @@
     .small-note{font-size:12px;color:#6b7280;margin-top:12px}
     .footer{padding:12px 20px;border-top:1px solid rgba(15,23,42,0.04);font-size:12px;color:#6b7280;text-align:center;margin-top:12px;}
 
-    /* Admin controls */
-    .admin-controls{display:none;flex-direction:column;gap:8px;margin-top:16px;}
-    .service-status{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-    .service-status button{padding:4px 8px;font-size:13px;}
+    /* Admin Controls */
+    .controls { display:none; flex-direction:column; padding:24px; gap:16px; }
+    .service-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e5e7eb; }
+    .service-name { font-weight:600; color:#111827; }
+    .btn-group { display:flex; gap:8px; }
+    .btn-primary { background:#059669; color:#fff; }
+    .btn-yellow { background:#f59e0b; color:#fff; }
+    .btn-red { background:#dc2626; color:#fff; }
+    .admin-bar { display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid #e5e7eb; }
+    .user-email { font-size:14px; color:#374151; }
+    .signout-btn { background:#dc2626; color:#fff; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600; }
   </style>
 </head>
 <body>
   <div class="container" role="main">
+
+    <!-- Header / Logo -->
     <div class="header">
       <div class="logo"><img src="public/logo.png" alt="Logo" style="width:100%;height:100%;object-fit:contain;border-radius:6px;"></div>
       <div>
@@ -89,9 +98,10 @@
       </div>
     </div>
 
-    <form class="form" onsubmit="event.preventDefault();loginUser()">
+    <!-- Login Form -->
+    <form class="form" id="loginForm" onsubmit="event.preventDefault();loginUser()">
       <div>
-        <label for="username">Username / Email</label>
+        <label for="username">Username</label>
         <input id="username" name="username" type="text" inputmode="email" autocomplete="username" placeholder="example@daysmadesimple.com" required />
       </div>
 
@@ -111,37 +121,46 @@
       <div class="small-note">By signing in you agree to the terms of use.</div>
     </form>
 
-    <div class="admin-controls" id="adminControls">
-      <div class="service-status">
-        <span>PSLE Countdown Website</span>
-        <div>
-          <button onclick="updateStatus('PSLEWebsite','operational')">Operational</button>
-          <button onclick="updateStatus('PSLEWebsite','partial')">Partial</button>
-          <button onclick="updateStatus('PSLEWebsite','disrupted')">Disrupted</button>
+    <div class="controls" id="controls">
+      <div class="admin-bar">
+        <span class="user-email" id="userEmail"></span>
+        <span class="signout-btn" id="signOutBtn">Sign Out</span>
+      </div>
+
+      <!-- Services -->
+      <div class="service-row">
+        <span class="service-name">PSLE Countdown Website</span>
+        <div class="btn-group">
+          <button class="btn-primary" data-service="psleWebsite" data-status="operational">Operational</button>
+          <button class="btn-yellow" data-service="psleWebsite" data-status="partial">Partial</button>
+          <button class="btn-red" data-service="psleWebsite" data-status="disrupted">Disrupted</button>
         </div>
       </div>
-      <div class="service-status">
-        <span>PSLE Countdown Admin Website</span>
-        <div>
-          <button onclick="updateStatus('PSLEAdmin','operational')">Operational</button>
-          <button onclick="updateStatus('PSLEAdmin','partial')">Partial</button>
-          <button onclick="updateStatus('PSLEAdmin','disrupted')">Disrupted</button>
+
+      <div class="service-row">
+        <span class="service-name">PSLE Countdown Admin Site</span>
+        <div class="btn-group">
+          <button class="btn-primary" data-service="psleAdmin" data-status="operational">Operational</button>
+          <button class="btn-yellow" data-service="psleAdmin" data-status="partial">Partial</button>
+          <button class="btn-red" data-service="psleAdmin" data-status="disrupted">Disrupted</button>
         </div>
       </div>
-      <div class="service-status">
-        <span>Countify App</span>
-        <div>
-          <button onclick="updateStatus('CountifyApp','operational')">Operational</button>
-          <button onclick="updateStatus('CountifyApp','partial')">Partial</button>
-          <button onclick="updateStatus('CountifyApp','disrupted')">Disrupted</button>
+
+      <div class="service-row">
+        <span class="service-name">Countify App</span>
+        <div class="btn-group">
+          <button class="btn-primary" data-service="countifyApp" data-status="operational">Operational</button>
+          <button class="btn-yellow" data-service="countifyApp" data-status="partial">Partial</button>
+          <button class="btn-red" data-service="countifyApp" data-status="disrupted">Disrupted</button>
         </div>
       </div>
-      <div class="service-status">
-        <span>Employee Portal</span>
-        <div>
-          <button onclick="updateStatus('EmployeePortal','operational')">Operational</button>
-          <button onclick="updateStatus('EmployeePortal','partial')">Partial</button>
-          <button onclick="updateStatus('EmployeePortal','disrupted')">Disrupted</button>
+
+      <div class="service-row">
+        <span class="service-name">Employee Portal</span>
+        <div class="btn-group">
+          <button class="btn-primary" data-service="employeePortal" data-status="operational">Operational</button>
+          <button class="btn-yellow" data-service="employeePortal" data-status="partial">Partial</button>
+          <button class="btn-red" data-service="employeePortal" data-status="disrupted">Disrupted</button>
         </div>
       </div>
     </div>
@@ -149,9 +168,9 @@
     <div class="footer">If you need help, contact your system administrator.</div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -166,25 +185,25 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    const adminControls = document.getElementById('adminControls');
+    const loginForm = document.getElementById('loginForm');
+    const controls = document.getElementById('controls');
+    const userEmailEl = document.getElementById('userEmail');
 
-    // Password login
     function loginUser(){
       const email = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       if(!password){ alert("Password empty! Use 'Sign in with Email' for passwordless."); return; }
       auth.signInWithEmailAndPassword(email,password)
-        .then(()=> {
-          adminControls.style.display='flex';
-        })
         .catch(err=> alert('❌ '+err.message));
     }
 
-    // Magic link login
     function sendSignInLink(){
       const email = document.getElementById('username').value.trim();
       if(!email){ alert('Enter your email first'); return; }
-      const actionCodeSettings = { url: window.location.origin + '/edit.html', handleCodeInApp: true };
+      const actionCodeSettings = {
+        url: window.location.origin + '/edit.html',
+        handleCodeInApp: true
+      };
       auth.sendSignInLinkToEmail(email, actionCodeSettings)
         .then(()=>{
           window.localStorage.setItem('emailForSignIn', email);
@@ -193,31 +212,35 @@
         .catch(err=>alert('❌ '+err.message));
     }
 
-    auth.onAuthStateChanged(user=>{
-      if(user) adminControls.style.display='flex';
-      else adminControls.style.display='none';
-    });
-
-    // Firestore status update
-    const statusRef = db.collection('status').doc('systemStatus');
-
-    // Create doc if not exist
-    statusRef.get().then(doc=>{
-      if(!doc.exists){
-        statusRef.set({
-          PSLEWebsite:'operational',
-          PSLEAdmin:'operational',
-          CountifyApp:'operational',
-          EmployeePortal:'operational'
-        });
+    auth.onAuthStateChanged(user => {
+      if(user){
+        loginForm.style.display = 'none';
+        controls.style.display = 'flex';
+        userEmailEl.textContent = `Signed in as ${user.email}`;
+      } else {
+        loginForm.style.display = 'flex';
+        controls.style.display = 'none';
       }
     });
 
-    function updateStatus(service, status){
-      statusRef.update({[service]:status})
-        .then(()=> alert(service + ' set to ' + status))
-        .catch(err=> alert('Error: '+err.message));
-    }
+    document.getElementById('signOutBtn').addEventListener('click', () => auth.signOut());
+
+    // Update Firestore on button click
+    document.querySelectorAll('.btn-group button').forEach(btn=>{
+      btn.addEventListener('click', async () => {
+        const service = btn.getAttribute('data-service');
+        const status = btn.getAttribute('data-status');
+        try{
+          await db.collection('status').doc(service).set({
+            status,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          alert(`Updated ${service} to ${status}`);
+        } catch(err){
+          alert('Error updating status: '+err.message);
+        }
+      });
+    });
   </script>
 </body>
 </html>
