@@ -46,10 +46,10 @@
 
     <!-- Individual Service Cards -->
     <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-      <div class="status-card"><span>PSLE Countdown Website</span><span id="PSLEWebsite" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
-      <div class="status-card"><span>PSLE Countdown Administrator Website</span><span id="PSLEAdmin" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
-      <div class="status-card"><span>Countify App</span><span id="CountifyApp" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
-      <div class="status-card"><span>Employee Portal</span><span id="EmployeePortal" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
+      <div class="status-card"><span>PSLE Countdown Website</span><span id="psleWebsite" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
+      <div class="status-card"><span>PSLE Countdown Administrator Website</span><span id="psleAdmin" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
+      <div class="status-card"><span>Countify App</span><span id="countifyApp" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
+      <div class="status-card"><span>Employee Portal</span><span id="employeePortal" style="color:var(--green-600); font-weight:600; float:right">Operational</span></div>
     </div>
   </div>
 
@@ -72,7 +72,7 @@
     const subtext = document.getElementById('subtext');
     const body = document.body;
 
-    const serviceIds = ['PSLEWebsite','PSLEAdmin','CountifyApp','EmployeePortal'];
+    const serviceIds = ['psleWebsite','psleAdmin','countifyApp','employeePortal'];
     const statusColors = {
       operational: {color:'var(--green-600)', text:'Operational', bg:'var(--green-100)'},
       partial: {color:'var(--yellow-600)', text:'Partial Outage', bg:'var(--yellow-100)'},
