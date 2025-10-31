@@ -1,4 +1,3 @@
-<!-- home.html -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -19,24 +18,37 @@
       --card-bg: #ffffff;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
-    html, body {height: 100%; margin: 0;}
-    body {background: var(--green-100); display: flex; align-items: flex-start; justify-content: center; padding: 48px; transition: background 0.3s ease;}
-    .wrap {width: 980px; max-width: 95%;}
-    .status-card {background: var(--card-bg); border-radius: 12px; padding: 18px; box-shadow: 0 6px 20px rgba(16,24,40,0.06); border: 1px solid rgba(0,0,0,0.04); margin-top:12px; display:flex; justify-content:space-between; align-items:center;}
-    .status-dot{font-size:24px; margin-right:12px;}
+    html, body {height: 100%;margin: 0;}
+    body {background: var(--green-100);display: flex;align-items: flex-start;justify-content: center;padding: 48px;transition: background 0.3s ease;}
+    .wrap {width: 980px;max-width: 95%;}
+    .status-card {background: var(--card-bg);border-radius: 12px;padding: 18px;box-shadow: 0 6px 20px rgba(16,24,40,0.06);border: 1px solid rgba(0,0,0,0.04);}
+    h2 {margin-bottom: 10px;}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="status-card" id="overallCard">
-      <div style="display:flex;align-items:center;"><span class="status-dot" id="overallDot">✓</span><span id="overallText">All Systems Operational</span></div>
-      <div id="subtext" style="color:var(--muted); font-size:13px;">All monitored services are functioning normally.</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div id="overallDot" style="font-size:24px;color:var(--green-600);">✓</div>
+          <div>
+            <h2 id="overallText">All Systems Operational</h2>
+            <p id="subtext" style="color:var(--muted);">All monitored services are functioning normally.</p>
+          </div>
+        </div>
+        <div style="text-align:right;color:var(--muted);font-size:13px;">
+          <div id="timeAgo">Refreshed 0s ago</div>
+          <div>Last checked at <span id="lastChecked">--:--:--</span></div>
+        </div>
+      </div>
     </div>
-    <div class="status-card"><span>PSLE Countdown Website</span><span id="PSLEWebsite" style="color:var(--green-600);font-weight:600;">Operational</span></div>
-    <div class="status-card"><span>PSLE Countdown Administrator Website</span><span id="PSLEAdmin" style="color:var(--green-600);font-weight:600;">Operational</span></div>
-    <div class="status-card"><span>Countify App</span><span id="CountifyApp" style="color:var(--green-600);font-weight:600;">Operational</span></div>
-    <div class="status-card"><span>Employee Portal</span><span id="EmployeePortal" style="color:var(--green-600);font-weight:600;">Operational</span></div>
-    <div style="margin-top:12px;color:var(--muted);font-size:13px;">Last updated: <span id="lastUpdated">--:--:--</span></div>
+
+    <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="status-card"><span>PSLE Countdown Website</span><span id="PSLEWebsite" style="color:var(--green-600);font-weight:600;float:right">Operational</span></div>
+      <div class="status-card"><span>PSLE Countdown Administrator Website</span><span id="PSLEAdmin" style="color:var(--green-600);font-weight:600;float:right">Operational</span></div>
+      <div class="status-card"><span>Countify App</span><span id="CountifyApp" style="color:var(--green-600);font-weight:600;float:right">Operational</span></div>
+      <div class="status-card"><span>Employee Portal</span><span id="EmployeePortal" style="color:var(--green-600);font-weight:600;float:right">Operational</span></div>
+    </div>
   </div>
 
   <script>
@@ -48,37 +60,60 @@
       messagingSenderId: "165327565681",
       appId: "1:165327565681:web:e28364ebb3cb1d9a683cd0"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const statusRef = db.collection('status').doc('systemStatus');
+    const overallDot = document.getElementById('overallDot');
+    const overallText = document.getElementById('overallText');
+    const subtext = document.getElementById('subtext');
+    const body = document.body;
+    const serviceIds = ['PSLEWebsite','PSLEAdmin','CountifyApp','EmployeePortal'];
 
-    statusRef.onSnapshot(doc => {
-      if (!doc.exists) return;
-      const data = doc.data();
-      const colorMap = { operational:'var(--green-600)', partial:'var(--yellow-600)', disrupted:'var(--red-600)' };
-      const bgMap = { operational:'var(--green-100)', partial:'var(--yellow-100)', disrupted:'var(--red-100)' };
+    const statusColors = {
+      operational: {color:'var(--green-600)',text:'Operational',bg:'var(--green-100)'},
+      partial: {color:'var(--yellow-600)',text:'Partial Outage',bg:'var(--yellow-100)'},
+      disrupted: {color:'var(--red-600)',text:'Disrupted',bg:'var(--red-100)'}
+    };
 
-      document.getElementById('overallDot').textContent = data.overall==='operational'?'✓':(data.overall==='partial'?'!':'✕');
-      document.getElementById('overallDot').style.color = colorMap[data.overall];
-      document.getElementById('overallText').textContent = data.overall==='operational'?'All Systems Operational':(data.overall==='partial'?'Partial Site Outage':'Site Disruption');
-      document.getElementById('subtext').textContent = data.overall==='operational'?'All monitored services are functioning normally.':(data.overall==='partial'?'Some services are experiencing issues.':'Multiple services are down.');
-      document.body.style.background = bgMap[data.overall];
+    // Auto-update timestamps
+    let lastUpdated = new Date();
+    function updateTimestamps() {
+      const diff = Math.floor((Date.now() - lastUpdated.getTime())/1000);
+      document.getElementById('timeAgo').textContent = `Refreshed ${diff}s ago`;
+      document.getElementById('lastChecked').textContent = new Date().toLocaleTimeString();
+    }
+    setInterval(updateTimestamps, 1000);
 
-      document.getElementById('PSLEWebsite').textContent = capitalize(data.PSLEWebsite);
-      document.getElementById('PSLEWebsite').style.color = colorMap[data.PSLEWebsite];
-      document.getElementById('PSLEAdmin').textContent = capitalize(data.PSLEAdmin);
-      document.getElementById('PSLEAdmin').style.color = colorMap[data.PSLEAdmin];
-      document.getElementById('CountifyApp').textContent = capitalize(data.CountifyApp);
-      document.getElementById('CountifyApp').style.color = colorMap[data.CountifyApp];
-      document.getElementById('EmployeePortal').textContent = capitalize(data.EmployeePortal);
-      document.getElementById('EmployeePortal').style.color = colorMap[data.EmployeePortal];
+    function updateUI(data){
+      // Overall
+      let worst = 'operational';
+      serviceIds.forEach(id=>{
+        const status = data[id] || 'operational';
+        document.getElementById(id).textContent = statusColors[status].text;
+        document.getElementById(id).style.color = statusColors[status].color;
+        if(status==='disrupted') worst='disrupted';
+        if(status==='partial' && worst!=='disrupted') worst='partial';
+      });
 
-      const d = new Date(data.lastUpdated);
-      document.getElementById('lastUpdated').textContent = d.toLocaleTimeString();
-    });
+      overallDot.textContent = worst==='operational'? '✓' : worst==='partial'? '!' : '✕';
+      overallDot.style.color = statusColors[worst].color;
+      overallText.textContent = worst==='operational'? 'All Systems Operational' : worst==='partial'? 'Partial Site Outage' : 'Site Disruption';
+      subtext.textContent = worst==='operational'? 'All monitored services are functioning normally.' : worst==='partial'? 'Some services are experiencing issues.' : 'Multiple services are down.';
+      body.style.background = statusColors[worst].bg;
 
-    function capitalize(str){ return str.charAt(0).toUpperCase() + str.slice(1); }
+      lastUpdated = new Date();
+    }
+
+    // Listen for Firestore live updates
+    db.collection('status').doc('systemStatus')
+      .onSnapshot(doc=>{
+        if(doc.exists){
+          updateUI(doc.data());
+        }
+      }, err=>{
+        console.error('Error fetching status:', err);
+      });
   </script>
 </body>
 </html>
