@@ -215,18 +215,19 @@
     document.getElementById('signOutBtn').addEventListener('click', () => auth.signOut());
 
     // Update Firestore on button click
-    document.querySelectorAll('.btn-group button').forEach(btn=>{
+    document.querySelectorAll('.btn-group button').forEach(btn => {
       btn.addEventListener('click', async () => {
         const service = btn.getAttribute('data-service');
         const status = btn.getAttribute('data-status');
-        try{
+        try {
+          // Update the SINGLE document that home.html reads
           await db.collection('status').doc('systemStatus').update({
-            [service]: status,
+            [service]: status,                  // dynamic field
             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
           });
           alert(`Updated ${service} to ${status}`);
-        } catch(err){
-          alert('Error updating status: '+err.message);
+        } catch(err) {
+          alert('Error updating status: ' + err.message);
         }
       });
     });
