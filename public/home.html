@@ -1,0 +1,84 @@
+<!-- home.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Status — PSLE / Countify</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --green-100: #e6ffed;
+      --green-600: #059669;
+      --yellow-100: #fff7ed;
+      --yellow-600: #b45309;
+      --red-100: #ffecec;
+      --red-600: #dc2626;
+      --muted: #6b7280;
+      --card-bg: #ffffff;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html, body {height: 100%; margin: 0;}
+    body {background: var(--green-100); display: flex; align-items: flex-start; justify-content: center; padding: 48px; transition: background 0.3s ease;}
+    .wrap {width: 980px; max-width: 95%;}
+    .status-card {background: var(--card-bg); border-radius: 12px; padding: 18px; box-shadow: 0 6px 20px rgba(16,24,40,0.06); border: 1px solid rgba(0,0,0,0.04); margin-top:12px; display:flex; justify-content:space-between; align-items:center;}
+    .status-dot{font-size:24px; margin-right:12px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="status-card" id="overallCard">
+      <div style="display:flex;align-items:center;"><span class="status-dot" id="overallDot">✓</span><span id="overallText">All Systems Operational</span></div>
+      <div id="subtext" style="color:var(--muted); font-size:13px;">All monitored services are functioning normally.</div>
+    </div>
+    <div class="status-card"><span>PSLE Countdown Website</span><span id="PSLEWebsite" style="color:var(--green-600);font-weight:600;">Operational</span></div>
+    <div class="status-card"><span>PSLE Countdown Administrator Website</span><span id="PSLEAdmin" style="color:var(--green-600);font-weight:600;">Operational</span></div>
+    <div class="status-card"><span>Countify App</span><span id="CountifyApp" style="color:var(--green-600);font-weight:600;">Operational</span></div>
+    <div class="status-card"><span>Employee Portal</span><span id="EmployeePortal" style="color:var(--green-600);font-weight:600;">Operational</span></div>
+    <div style="margin-top:12px;color:var(--muted);font-size:13px;">Last updated: <span id="lastUpdated">--:--:--</span></div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC6ReZ9JiKAhVwXLUwgzRRsk2Daw3pRli8",
+      authDomain: "daysmadesimple-admin.firebaseapp.com",
+      projectId: "daysmadesimple-admin",
+      storageBucket: "daysmadesimple-admin.firebasestorage.app",
+      messagingSenderId: "165327565681",
+      appId: "1:165327565681:web:e28364ebb3cb1d9a683cd0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const statusRef = db.collection('status').doc('systemStatus');
+
+    statusRef.onSnapshot(doc => {
+      if (!doc.exists) return;
+      const data = doc.data();
+      const colorMap = { operational:'var(--green-600)', partial:'var(--yellow-600)', disrupted:'var(--red-600)' };
+      const bgMap = { operational:'var(--green-100)', partial:'var(--yellow-100)', disrupted:'var(--red-100)' };
+
+      document.getElementById('overallDot').textContent = data.overall==='operational'?'✓':(data.overall==='partial'?'!':'✕');
+      document.getElementById('overallDot').style.color = colorMap[data.overall];
+      document.getElementById('overallText').textContent = data.overall==='operational'?'All Systems Operational':(data.overall==='partial'?'Partial Site Outage':'Site Disruption');
+      document.getElementById('subtext').textContent = data.overall==='operational'?'All monitored services are functioning normally.':(data.overall==='partial'?'Some services are experiencing issues.':'Multiple services are down.');
+      document.body.style.background = bgMap[data.overall];
+
+      document.getElementById('PSLEWebsite').textContent = capitalize(data.PSLEWebsite);
+      document.getElementById('PSLEWebsite').style.color = colorMap[data.PSLEWebsite];
+      document.getElementById('PSLEAdmin').textContent = capitalize(data.PSLEAdmin);
+      document.getElementById('PSLEAdmin').style.color = colorMap[data.PSLEAdmin];
+      document.getElementById('CountifyApp').textContent = capitalize(data.CountifyApp);
+      document.getElementById('CountifyApp').style.color = colorMap[data.CountifyApp];
+      document.getElementById('EmployeePortal').textContent = capitalize(data.EmployeePortal);
+      document.getElementById('EmployeePortal').style.color = colorMap[data.EmployeePortal];
+
+      const d = new Date(data.lastUpdated);
+      document.getElementById('lastUpdated').textContent = d.toLocaleTimeString();
+    });
+
+    function capitalize(str){ return str.charAt(0).toUpperCase() + str.slice(1); }
+  </script>
+</body>
+</html>
