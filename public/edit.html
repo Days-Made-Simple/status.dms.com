@@ -1,41 +1,157 @@
-<!-- edit.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Status Editor — PSLE / Countify</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <title>Sign In</title>
   <style>
-    body{font-family:Inter,Roboto,-apple-system,"Segoe UI","Helvetica Neue",Arial;display:flex;justify-content:center;align-items:flex-start;padding:48px;background:#e6ffed;}
-    .container{width:480px;background:#fff;border-radius:12px;padding:24px;box-shadow:0 8px 30px rgba(17,24,39,0.06);}
-    input,button{padding:10px;border-radius:8px;border:1px solid #ccc;margin:6px 0;width:100%;}
-    button{background:#059669;color:#fff;border:none;cursor:pointer;font-weight:600;}
-    .status-card{margin-top:12px;padding:12px;background:#f9f9f9;border-radius:12px;display:flex;justify-content:space-between;align-items:center;}
-    .controls{display:flex;gap:8px;margin-top:16px;}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family: Inter, Roboto, -apple-system, "Segoe UI", "Helvetica Neue", Arial;
+      background:#ffffff;
+      color:#111827;
+      -webkit-font-smoothing:antialiased;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .container{
+      width:100%;
+      max-width:420px;
+      border-radius:12px;
+      box-shadow:0 8px 30px rgba(17,24,39,0.06);
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .header{
+      padding:24px 28px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      border-bottom:1px solid rgba(15,23,42,0.04);
+    }
+
+    .logo{
+      height:40px;
+      width:40px;
+      border-radius:6px;
+      background:#eef2ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#4338ca;
+      font-size:16px;
+    }
+
+    .brand { font-size:18px; font-weight:600; }
+
+    .form{ padding:28px; display:flex; flex-direction:column; gap:12px; }
+
+    label{display:block;font-size:13px;color:#374151;margin-bottom:4px;}
+    input[type="text"], input[type="password"]{
+      width:100%;
+      padding:12px 14px;
+      border:1px solid rgba(15,23,42,0.08);
+      border-radius:8px;
+      font-size:15px;
+      outline:none;
+      background:#fff;
+    }
+    input:focus{box-shadow:0 0 0 4px rgba(99,102,241,0.06);border-color:#6366f1}
+
+    .actions{ display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+    .actions-row{ display:flex; justify-content:space-between; align-items:center; }
+
+    .btn{ background:#111827; color:#fff; padding:10px 14px; border-radius:8px; border:none; font-weight:600; cursor:pointer; }
+
+    .link{font-size:13px;color:#4b5563;text-decoration:none;cursor:pointer;}
+    .small-note{font-size:12px;color:#6b7280;margin-top:12px}
+    .footer{padding:12px 20px;border-top:1px solid rgba(15,23,42,0.04);font-size:12px;color:#6b7280;text-align:center;margin-top:12px;}
+
+    /* Admin controls */
+    .admin-controls{display:none;flex-direction:column;gap:8px;margin-top:16px;}
+    .service-status{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    .service-status button{padding:4px 8px;font-size:13px;}
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Status Editor Login</h2>
-    <input type="text" id="email" placeholder="example@daysmadesimple.com" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="loginUser()">Sign In</button>
-    <div id="dashboard" style="display:none;">
-      <div class="status-card"><span>Overall</span><span id="overallText">All Operational</span></div>
-      <div class="status-card"><span>PSLE Countdown Website</span><span id="PSLEWebsite">Operational</span></div>
-      <div class="status-card"><span>PSLE Countdown Administrator Website</span><span id="PSLEAdmin">Operational</span></div>
-      <div class="status-card"><span>Countify App</span><span id="CountifyApp">Operational</span></div>
-      <div class="status-card"><span>Employee Portal</span><span id="EmployeePortal">Operational</span></div>
-      <div class="controls">
-        <button onclick="setStatus('operational')">All Operational</button>
-        <button style="background:#b45309" onclick="setStatus('partial')">Partial Outage</button>
-        <button style="background:#dc2626" onclick="setStatus('disrupted')">Site Disruption</button>
+  <div class="container" role="main">
+    <div class="header">
+      <div class="logo"><img src="public/logo.png" alt="Logo" style="width:100%;height:100%;object-fit:contain;border-radius:6px;"></div>
+      <div>
+        <div class="brand">Days Made Simple Employee Portal</div>
+        <div style="font-size:12px;color:#6b7280">Securely sign in to your account</div>
       </div>
     </div>
+
+    <form class="form" onsubmit="event.preventDefault();loginUser()">
+      <div>
+        <label for="username">Username / Email</label>
+        <input id="username" name="username" type="text" inputmode="email" autocomplete="username" placeholder="example@daysmadesimple.com" required />
+      </div>
+
+      <div>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" />
+      </div>
+
+      <div class="actions">
+        <div class="actions-row">
+          <a class="link" href="/resetpw">Forgot password?</a>
+          <button class="btn" type="submit">Sign in</button>
+        </div>
+        <span class="link" onclick="sendSignInLink()">Or, Sign in with Email</span>
+      </div>
+
+      <div class="small-note">By signing in you agree to the terms of use.</div>
+    </form>
+
+    <div class="admin-controls" id="adminControls">
+      <div class="service-status">
+        <span>PSLE Countdown Website</span>
+        <div>
+          <button onclick="updateStatus('PSLEWebsite','operational')">Operational</button>
+          <button onclick="updateStatus('PSLEWebsite','partial')">Partial</button>
+          <button onclick="updateStatus('PSLEWebsite','disrupted')">Disrupted</button>
+        </div>
+      </div>
+      <div class="service-status">
+        <span>PSLE Countdown Admin Website</span>
+        <div>
+          <button onclick="updateStatus('PSLEAdmin','operational')">Operational</button>
+          <button onclick="updateStatus('PSLEAdmin','partial')">Partial</button>
+          <button onclick="updateStatus('PSLEAdmin','disrupted')">Disrupted</button>
+        </div>
+      </div>
+      <div class="service-status">
+        <span>Countify App</span>
+        <div>
+          <button onclick="updateStatus('CountifyApp','operational')">Operational</button>
+          <button onclick="updateStatus('CountifyApp','partial')">Partial</button>
+          <button onclick="updateStatus('CountifyApp','disrupted')">Disrupted</button>
+        </div>
+      </div>
+      <div class="service-status">
+        <span>Employee Portal</span>
+        <div>
+          <button onclick="updateStatus('EmployeePortal','operational')">Operational</button>
+          <button onclick="updateStatus('EmployeePortal','partial')">Partial</button>
+          <button onclick="updateStatus('EmployeePortal','disrupted')">Disrupted</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">If you need help, contact your system administrator.</div>
   </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -49,53 +165,59 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const statusRef = db.collection('status').doc('systemStatus');
 
+    const adminControls = document.getElementById('adminControls');
+
+    // Password login
     function loginUser(){
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      if(!password){ alert("Password empty!"); return; }
+      if(!password){ alert("Password empty! Use 'Sign in with Email' for passwordless."); return; }
       auth.signInWithEmailAndPassword(email,password)
-        .then(()=>{
-          document.querySelector('input[type=text]').style.display='none';
-          document.querySelector('input[type=password]').style.display='none';
-          document.querySelector('button').style.display='none';
-          document.getElementById('dashboard').style.display='block';
-          loadStatus();
+        .then(()=> {
+          adminControls.style.display='flex';
         })
         .catch(err=> alert('❌ '+err.message));
     }
 
-    function loadStatus(){
-      statusRef.onSnapshot(doc=>{
-        if(!doc.exists) return;
-        const data = doc.data();
-        const colorMap = {operational:'#059669', partial:'#b45309', disrupted:'#dc2626'};
-        document.getElementById('overallText').textContent = capitalize(data.overall);
-        document.getElementById('PSLEWebsite').textContent = capitalize(data.PSLEWebsite);
-        document.getElementById('PSLEWebsite').style.color = colorMap[data.PSLEWebsite];
-        document.getElementById('PSLEAdmin').textContent = capitalize(data.PSLEAdmin);
-        document.getElementById('PSLEAdmin').style.color = colorMap[data.PSLEAdmin];
-        document.getElementById('CountifyApp').textContent = capitalize(data.CountifyApp);
-        document.getElementById('CountifyApp').style.color = colorMap[data.CountifyApp];
-        document.getElementById('EmployeePortal').textContent = capitalize(data.EmployeePortal);
-        document.getElementById('EmployeePortal').style.color = colorMap[data.EmployeePortal];
-      });
+    // Magic link login
+    function sendSignInLink(){
+      const email = document.getElementById('username').value.trim();
+      if(!email){ alert('Enter your email first'); return; }
+      const actionCodeSettings = { url: window.location.origin + '/edit.html', handleCodeInApp: true };
+      auth.sendSignInLinkToEmail(email, actionCodeSettings)
+        .then(()=>{
+          window.localStorage.setItem('emailForSignIn', email);
+          alert('✅ Email sent! Check your inbox to complete sign-in.');
+        })
+        .catch(err=>alert('❌ '+err.message));
     }
 
-    function setStatus(status){
-      const timestamp = Date.now();
-      statusRef.update({
-        overall: status,
-        PSLEWebsite: status,
-        PSLEAdmin: status,
-        CountifyApp: status,
-        EmployeePortal: status,
-        lastUpdated: timestamp
-      }).catch(err=>alert('Error updating status: '+err.message));
-    }
+    auth.onAuthStateChanged(user=>{
+      if(user) adminControls.style.display='flex';
+      else adminControls.style.display='none';
+    });
 
-    function capitalize(str){ return str.charAt(0).toUpperCase() + str.slice(1); }
+    // Firestore status update
+    const statusRef = db.collection('status').doc('systemStatus');
+
+    // Create doc if not exist
+    statusRef.get().then(doc=>{
+      if(!doc.exists){
+        statusRef.set({
+          PSLEWebsite:'operational',
+          PSLEAdmin:'operational',
+          CountifyApp:'operational',
+          EmployeePortal:'operational'
+        });
+      }
+    });
+
+    function updateStatus(service, status){
+      statusRef.update({[service]:status})
+        .then(()=> alert(service + ' set to ' + status))
+        .catch(err=> alert('Error: '+err.message));
+    }
   </script>
 </body>
 </html>
