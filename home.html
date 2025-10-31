@@ -34,9 +34,9 @@
   </style>
 </head>
 <body>
-  <div class="wrap" id="statusContent">
-    <!-- Login Screen -->
-    <div class="login-card" id="loginCard">
+  <div class="wrap">
+    <!-- Login Card (shown if not signed in) -->
+    <div class="login-card" id="loginCard" style="display:none;">
       <h2>Sign in to Status</h2>
       <p class="subtitle">with Days Made Simple Employee Portal</p>
       <form id="loginForm">
@@ -47,8 +47,8 @@
       </form>
     </div>
 
-    <!-- Dashboard -->
-    <div id="dashboard" style="display:none;">
+    <!-- Dashboard / Public Status -->
+    <div id="dashboard">
       <div class="status-card" id="overallCard">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div style="display:flex;gap:12px;align-items:center;">
@@ -72,13 +72,13 @@
         <div class="status-card"><span>Employee Portal</span><span style="color:var(--green-600);font-weight:600;float:right">Operational</span></div>
       </div>
 
-      <!-- Admin Bar -->
+      <!-- Admin Bar (only for signed-in employees) -->
       <div class="admin-bar" id="adminBar">
         <span id="userEmail"></span>
         <button id="signOutBtn" style="background:var(--red-600);">Sign Out</button>
       </div>
 
-      <!-- Controls -->
+      <!-- Controls (only for signed-in employees) -->
       <div class="controls" id="controls">
         <button id="setOperational">Set All Operational</button>
         <button id="setPartial" style="background:var(--yellow-600);">Set Partial Outage</button>
@@ -88,7 +88,7 @@
   </div>
 
   <script>
-    // Initialize Firebase
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyC6ReZ9JiKAhVwXLUwgzRRsk2Daw3pRli8",
       authDomain: "daysmadesimple-admin.firebaseapp.com",
@@ -109,6 +109,7 @@
     const userEmailEl = document.getElementById('userEmail');
     const controls = document.getElementById('controls');
 
+    // Show login card only for non-signed-in employees
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value;
@@ -131,8 +132,8 @@
         controls.style.display = 'flex';
         userEmailEl.textContent = `Signed in as ${user.email}`;
       } else {
-        loginCard.style.display = 'block';
-        dashboard.style.display = 'none';
+        loginCard.style.display = 'none'; // hide login card by default for public
+        dashboard.style.display = 'block'; // public can view
         adminBar.style.display = 'none';
         controls.style.display = 'none';
       }
@@ -142,7 +143,7 @@
       auth.signOut();
     });
 
-    // Refresh timers for status
+    // Refresh timers
     let lastUpdated = new Date();
     function updateTimestamps() {
       const diff = Math.floor((Date.now() - lastUpdated.getTime())/1000);
@@ -151,7 +152,7 @@
     }
     setInterval(updateTimestamps, 1000);
 
-    // Admin controls mock actions
+    // Admin controls actions
     const overallDot = document.getElementById('overallDot');
     const overallText = document.getElementById('overallText');
     const subtext = document.getElementById('subtext');
